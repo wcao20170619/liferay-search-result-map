@@ -20,61 +20,12 @@ Start Liferay Portal
 
 Confirm this module has been loaded:
 
-`lb | grep "Liferay Geolocation Bulk Load"`
-
-Confirm the command is available:
-
-`help | grep geolocation`
-
-Execute the command: 
-
-`geolocation:load`
-
-You can pass a number as a parameter to determine how 
-many Journal Articles will be inserted. If you choose to not pass any number, the 
-default value will be `10`.
+`lb | grep "Liferay Search Result Map"`
 
 In case the project doesn't build correctly nor the bundle doesn't start 
 immediately after deployment, double check module versions in `bnd.bnd`,
 dependencies versions in `build.gradle`, 
 and the versions of the same packages deployed in the Portal.
-
-# DATABASE x ELASTICSEARCH COMPARISON
-
-After running the load command, you can check if everything was indexed
-correctly. Just count the number of rows in the JournalArticle table in the DB
-and then count the number of documents indexed in the Elasticsearch to see if
-they match.
-
-Run the following query to count the number of Journal Articles inserted in the
-database of your choice (syntax may differ depending on the database):
-
-```
-SELECT companyId, count(*) FROM JournalArticle group by companyId;
-```
-
-Run the following query to count the number of Journal Articles indexed in the
-Elasticsearch server:
-
-```
-curl -XPOST 'http://localhost:9200/_search?pretty' --data \
-\
-'{
-  "size": 0,
-  "aggregations": {
-    "JournalArticle per companyId": {
-      "terms": {
-        "field": "companyId"
-      }
-    }
-  },
-  "query": {
-    "term": {
-      "entryClassName": "com.liferay.journal.model.JournalArticle"
-    }
-  }
-}'
-```
 
 If you're using elasticsearch-head to run this query, make sure you're using
 the `POST` method instead of `GET`.

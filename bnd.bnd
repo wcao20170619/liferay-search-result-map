@@ -1,0 +1,16 @@
+Bundle-ClassPath: \
+	.,\
+	lib/jackson-annotations.jar,\
+	lib/jackson-core.jar,\
+	lib/jackson-databind.jar
+Bundle-Name: Liferay Search Result Map 
+Bundle-SymbolicName: liferay.search.result.map
+Bundle-Version: 1.0.0
+Include-Resource:\
+	lib/jackson-annotations.jar=jackson-annotations-2.1.4.jar,\
+	lib/jackson-core.jar=jackson-core-2.1.4.jar,\
+	lib/jackson-databind.jar=jackson-databind-2.1.4.jar
+Import-Package: \
+	com.liferay.portal.kernel.service;version="[1.0,2.1)",\
+ 	\
+	*

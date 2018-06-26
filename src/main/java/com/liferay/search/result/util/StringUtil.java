@@ -12,22 +12,37 @@
  * details.
  */
 
-package com.liferay.search.result.map.portlet;
+package com.liferay.search.result.util;
+
+import com.liferay.portal.kernel.util.Validator;
+
+import java.util.Optional;
 
 /**
  * @author André de Oliveira
-*/
-public class SearchResultsMapPortletKeys {
+ */
+public class StringUtil {
 
-	public static final String CSS_CLASS_WRAPPER = "portlet-search-results-map";
+	public static Optional<String> maybe(String s) {
+		s = com.liferay.portal.kernel.util.StringUtil.trim(s);
 
-	public static final String DISPLAY_NAME = "PoC: Results Map";
+		if (Validator.isBlank(s)) {
+			return Optional.empty();
+		}
 
-	public static final String PORTLET_NAME =
-		"com_liferay_portal_search_web_search_results_map_portlet_" +
-			"SearchResultsMapPortlet";
+		return Optional.of(s);
+	}
 
-	public static final String VIEW_TEMPLATE =
-		"/search/map/SearchResultsMapPortlet_view.jsp";
+	public static Optional<String[]> maybe(String[] texts) {
+		if (texts == null) {
+			return Optional.empty();
+		}
+
+		if (texts.length == 0) {
+			return Optional.empty();
+		}
+
+		return Optional.of(texts);
+	}
 
 }

@@ -52,8 +52,8 @@ import com.liferay.portal.search.summary.SummaryBuilderFactory;
 import com.liferay.portal.search.web.search.result.SearchResultImage;
 import com.liferay.portal.search.web.search.result.SearchResultImageContributor;
 import com.liferay.search.result.display.context.SearchResultFieldDisplayContext;
-import com.liferay.search.result.display.context.SearchResultPreferences;
 import com.liferay.search.result.display.context.SearchResultSummaryDisplayContext;
+import com.liferay.search.result.mappoc.portlet.SearchResultPreferences;
 import com.liferay.search.result.util.SearchUtil;
 
 import java.text.DateFormat;

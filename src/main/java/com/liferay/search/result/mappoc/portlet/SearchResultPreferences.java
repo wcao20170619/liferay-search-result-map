@@ -12,17 +12,23 @@
  * details.
  */
 
-package com.liferay.search.result.display.context;
+package com.liferay.search.result.mappoc.portlet;
 
 /**
- * @author André de Oliveira
+ * @author Wade Cao
  */
 public interface SearchResultPreferences {
+	
+	public static final String PREFERENCE_KEY_LATITUDE = "lat";
+	
+	public static final String PREFERENCE_KEY_LONGITUDE = "lng";
+	
+	public String getLatitude();
 
+	public String getLongitude();
+	
 	public boolean isDisplayResultsInDocumentForm();
-
-	public boolean isHighlightEnabled();
-
+	
 	public boolean isViewInContext();
 
 }

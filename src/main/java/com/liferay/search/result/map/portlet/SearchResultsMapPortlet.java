@@ -14,24 +14,43 @@
 
 package com.liferay.search.result.map.portlet;
 
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.search.Document;
+import com.liferay.portal.kernel.security.permission.ResourceActions;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
+import com.liferay.portal.search.web.internal.display.context.PortletURLFactory;
+import com.liferay.portal.search.web.internal.display.context.PortletURLFactoryImpl;
+import com.liferay.portal.search.web.internal.result.display.builder.SearchResultSummaryDisplayBuilder;
+import com.liferay.portal.search.web.internal.result.display.context.SearchResultSummaryDisplayContext;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchRequest;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchResponse;
-import com.liferay.search.result.display.builder.MapMarkersBuilder;
-import com.liferay.search.result.util.SearchUtil;
+import com.liferay.portal.search.web.search.result.SearchResultImageContributor;
 
 import java.io.IOException;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
+import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 /**
  * @author André de Oliveira
@@ -42,7 +61,8 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=" +
 			SearchResultsMapPortletKeys.CSS_CLASS_WRAPPER,
-		"com.liferay.portlet.display-category=com.liferay.geolocation.bulk.category",
+		"com.liferay.portlet.display-category=category.search-poc",
+		"com.liferay.portlet.header-portlet-css=/map/results/css/main.css",
 		"com.liferay.portlet.icon=/icons/search.png",
 		"com.liferay.portlet.instanceable=true",
 		"com.liferay.portlet.layout-cacheable=true",
@@ -74,61 +94,187 @@ public class SearchResultsMapPortlet extends MVCPortlet {
 		PortletSharedSearchResponse portletSharedSearchResponse =
 			portletSharedSearchRequest.search(renderRequest);
 
-		SearchResultsMapDisplayContext searchResultsMapDisplayContext =
-			buildDisplayContext(
-				portletSharedSearchResponse, renderRequest, renderResponse);
-
 		renderRequest.setAttribute(
 			SearchResultsMapDisplayContext.ATTRIBUTE,
-			searchResultsMapDisplayContext);
+			buildDisplayContext(
+				portletSharedSearchResponse, renderRequest, renderResponse));
 
 		super.render(renderRequest, renderResponse);
 	}
 
-	protected SearchResultsMapDisplayContext buildDisplayContext(
-		PortletSharedSearchResponse portletSharedSearchResponse,
-		RenderRequest renderRequest, RenderResponse renderResponse) 
-			throws PortletException {
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		policy = ReferencePolicy.DYNAMIC
+	)
+	protected void addSearchResultImageContributor(
+		SearchResultImageContributor searchResultImageContributor) {
 
-		String mapMarkersJSON = buildMapMarkersJSON(
-			renderRequest, renderResponse, portletSharedSearchResponse);
+		_searchResultImageContributors.add(searchResultImageContributor);
+	}
+
+	protected SearchResultsMapDisplayContext buildDisplayContext(
+			PortletSharedSearchResponse portletSharedSearchResponse,
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws PortletException {
 
 		Optional<String> keywordsOptional =
 			portletSharedSearchResponse.getKeywordsOptional();
 
 		String keywords = keywordsOptional.orElse(StringPool.BLANK);
 
+		String mapMarkersJSON = buildMapMarkers(
+			portletSharedSearchResponse, renderRequest);
+
 		SearchResultsMapDisplayContext searchResultsMapDisplayContext =
-			new SearchResultsMapDisplayContext(keywords, mapMarkersJSON);
+			new SearchResultsMapDisplayContext(
+				portletSharedSearchResponse, keywords, mapMarkersJSON);
+
+		searchResultsMapDisplayContext.setSearchResultsSummariesHolder(
+			buildSummaries(
+				portletSharedSearchResponse, renderRequest, renderResponse));
 
 		return searchResultsMapDisplayContext;
 	}
 
-	protected String buildMapMarkersJSON(
-		RenderRequest renderRequest, RenderResponse renderResponse,
-		PortletSharedSearchResponse portletSharedSearchResponse) 
-			throws PortletException {
+	protected String buildMapMarkers(
+		PortletSharedSearchResponse portletSharedSearchResponse,
+		RenderRequest renderRequest) {
 
-		MapMarkersBuilder mapMarkersBuilder = new MapMarkersBuilder();
+		ThemeDisplay themeDisplay = portletSharedSearchResponse.getThemeDisplay(
+			renderRequest);
 
-		mapMarkersBuilder.setHighlightEnabled(true);
-		mapMarkersBuilder.setLocale(renderRequest.getLocale());
-		mapMarkersBuilder.setRenderRequest(renderRequest);
-		mapMarkersBuilder.setRenderResponse(renderResponse);
-		mapMarkersBuilder.setPortletURL(
-			SearchUtil.getPortletURL(renderRequest, renderResponse));
-		mapMarkersBuilder.setSummaryBuilderFactory(summaryBuilderFactory);
+		Locale locale = themeDisplay.getLocale();
 
-		String mapMarkersJSON = mapMarkersBuilder.buildMapMarkersJSON(
+		MapMarkersExtendedBuilder mapMarkersExtendedBuilder =
+			new MapMarkersExtendedBuilder(locale, resourceActions);
+
+		return mapMarkersExtendedBuilder.buildMapMarkersJSON(
 			portletSharedSearchResponse.getDocuments());
-
-		return mapMarkersJSON;
 	}
-	
+
+	protected SearchResultsSummariesHolder buildSummaries(
+			PortletSharedSearchResponse portletSharedSearchResponse,
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws PortletException {
+
+		try {
+			return doBuildSummaries(
+				portletSharedSearchResponse, renderRequest, renderResponse);
+		}
+		catch (PortletException pe) {
+			throw pe;
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new PortletException(e);
+		}
+	}
+
+	protected SearchResultsSummariesHolder doBuildSummaries(
+			PortletSharedSearchResponse portletSharedSearchResponse,
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws Exception {
+
+		SearchMapPortletPreferences searchMapPortletPreferences =
+			new SearchMapPortletPreferencesImpl(
+				portletSharedSearchResponse.getPortletPreferences(
+					renderRequest));
+
+		ThemeDisplay themeDisplay = portletSharedSearchResponse.getThemeDisplay(
+			renderRequest);
+
+		List<Document> documents = portletSharedSearchResponse.getDocuments();
+
+		SearchResultsSummariesHolder searchResultsSummariesHolder =
+			new SearchResultsSummariesHolder(documents.size());
+
+		PortletURLFactory portletURLFactory = new PortletURLFactoryImpl(
+			renderRequest, renderResponse);
+
+		for (Document document : documents) {
+			SearchResultSummaryDisplayContext summary = doBuildSummary(
+				document, portletSharedSearchResponse, renderRequest,
+				renderResponse, themeDisplay, portletURLFactory,
+				searchMapPortletPreferences);
+
+			searchResultsSummariesHolder.put(document, summary);
+		}
+
+		return searchResultsSummariesHolder;
+	}
+
+	protected SearchResultSummaryDisplayContext doBuildSummary(
+			Document document,
+			PortletSharedSearchResponse portletSharedSearchResponse,
+			RenderRequest renderRequest, RenderResponse renderResponse,
+			ThemeDisplay themeDisplay, PortletURLFactory portletURLFactory,
+			SearchMapPortletPreferences searchResultsPortletPreferences)
+		throws Exception {
+
+		SearchResultSummaryDisplayBuilder searchResultSummaryDisplayBuilder =
+			new SearchResultSummaryDisplayBuilder();
+
+		PortletURL portletURL = portletURLFactory.getPortletURL();
+
+		searchResultSummaryDisplayBuilder.setAssetEntryLocalService(
+			assetEntryLocalService);
+		searchResultSummaryDisplayBuilder.setCurrentURL(portletURL.toString());
+		searchResultSummaryDisplayBuilder.setDocument(document);
+		searchResultSummaryDisplayBuilder.setHighlightEnabled(
+			searchResultsPortletPreferences.isHighlightEnabled());
+		searchResultSummaryDisplayBuilder.setImageRequested(true);
+		searchResultSummaryDisplayBuilder.setLanguage(language);
+		searchResultSummaryDisplayBuilder.setLocale(themeDisplay.getLocale());
+		searchResultSummaryDisplayBuilder.setPortletURLFactory(
+			portletURLFactory);
+		searchResultSummaryDisplayBuilder.setRenderRequest(renderRequest);
+		searchResultSummaryDisplayBuilder.setRenderResponse(renderResponse);
+		searchResultSummaryDisplayBuilder.setRequest(
+			getHttpServletRequest(renderRequest));
+		searchResultSummaryDisplayBuilder.setResourceActions(resourceActions);
+		searchResultSummaryDisplayBuilder.
+			setSearchResultImageContributorsStream(
+				_searchResultImageContributors.stream());
+		searchResultSummaryDisplayBuilder.setSummaryBuilderFactory(
+			summaryBuilderFactory);
+		searchResultSummaryDisplayBuilder.setThemeDisplay(themeDisplay);
+
+		return searchResultSummaryDisplayBuilder.build();
+	}
+
+	protected HttpServletRequest getHttpServletRequest(
+		RenderRequest renderRequest) {
+
+		LiferayPortletRequest liferayPortletRequest =
+			(LiferayPortletRequest)renderRequest;
+
+		return liferayPortletRequest.getHttpServletRequest();
+	}
+
+	protected void removeSearchResultImageContributor(
+		SearchResultImageContributor searchResultImageContributor) {
+
+		_searchResultImageContributors.remove(searchResultImageContributor);
+	}
+
+	@Reference
+	protected AssetEntryLocalService assetEntryLocalService;
+
+	@Reference
+	protected Language language;
+
 	@Reference
 	protected PortletSharedSearchRequest portletSharedSearchRequest;
 
 	@Reference
+	protected ResourceActions resourceActions;
+
+	@Reference
 	protected SummaryBuilderFactory summaryBuilderFactory;
+
+	private final Set<SearchResultImageContributor>
+		_searchResultImageContributors = new HashSet<>();
 
 }

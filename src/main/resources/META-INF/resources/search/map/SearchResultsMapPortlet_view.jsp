@@ -14,21 +14,21 @@
  */
 --%>
 
-<%@ page import="com.liferay.search.result.map.portlet.SearchResultsMapDisplayContext" %>
+<%@ page import="com.liferay.search.result.mappoc.portlet.SearchResultsMapDisplayContext" %>
 
 <%
 SearchResultsMapDisplayContext searchResultsMapDisplayContext = (SearchResultsMapDisplayContext)java.util.Objects.requireNonNull(request.getAttribute(SearchResultsMapDisplayContext.ATTRIBUTE));
 %>
 
-<div id="map-canvas" style="height:500px; width:800px"></div>
+<div id="map-canvas" style="height:500px;" z-index: 10; position: absolute; right: 0; top: 0;></div>
 
 <script
 	src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyABOXmu2BMXwxNHbhHrTcMRLnOJQYpHbWQ"
 	type="text/javascript"> </script>
 
 <script>
-	var ____lat = 42.359849;
-	var ____lng = -71.0586345;
+	var ____lat = <%= searchResultsMapDisplayContext.getLatitude() %>;
+	var ____lng = <%= searchResultsMapDisplayContext.getLongitude() %>;
 
 	var map;
 	var panorama;

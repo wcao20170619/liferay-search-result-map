@@ -1,3 +1,4 @@
+
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -11,34 +12,19 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+package com.liferay.search.result.util;
 
-package com.liferay.search.result.map.portlet;
-
-import java.io.Serializable;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.settings.ParameterMapSettings;
 
 /**
  * @author André de Oliveira
  */
-public class SearchResultsMapDisplayContext implements Serializable {
+public class PortletPreferencesJspUtil {
 
-	public static final String ATTRIBUTE = "SearchResultsMapDisplayContext";
-
-	public SearchResultsMapDisplayContext(
-		String keywords, String mapMarkersJSON) {
-
-		_keywords = keywords;
-		_mapMarkersJSON = mapMarkersJSON;
+	public static String getInputName(String key) {
+		return ParameterMapSettings.PREFERENCES_PREFIX + key +
+			StringPool.DOUBLE_DASH;
 	}
-
-	public String getKeywords() {
-		return _keywords;
-	}
-
-	public String getMapMarkersJSON() {
-		return _mapMarkersJSON;
-	}
-
-	private final String _keywords;
-	private final String _mapMarkersJSON;
 
 }

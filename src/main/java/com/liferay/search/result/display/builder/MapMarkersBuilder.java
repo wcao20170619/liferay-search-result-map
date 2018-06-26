@@ -22,7 +22,8 @@ import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
 import com.liferay.search.result.display.context.SearchResultSummaryDisplayContext;
-import com.liferay.search.result.map.portlet.SearchResultPreferencesImpl;
+import com.liferay.search.result.mappoc.portlet.SearchResultPreferences;
+import com.liferay.search.result.mappoc.portlet.SearchResultPreferencesImpl;
 
 import java.util.List;
 import java.util.Locale;
@@ -71,6 +72,11 @@ public class MapMarkersBuilder {
 
 		_summaryBuilderFactory = summaryBuilderFactory;
 	}
+	
+	public void setSearchResultPreferences(
+		SearchResultPreferences searchResultPreferences) {
+		this._searchResultPreferences = searchResultPreferences;
+	}
 
 	protected JSONObject getMapMarker(
 		GeoLocationPoint geoLocationPoint, String title, String summary) {
@@ -115,7 +121,7 @@ public class MapMarkersBuilder {
 		searchResultSummaryBuilder.setSummaryBuilderFactory(
 			_summaryBuilderFactory);
 		searchResultSummaryBuilder.setSearchResultPreferences(
-			new SearchResultPreferencesImpl());
+			_searchResultPreferences);
 
 		try {
 			return searchResultSummaryBuilder.build();
@@ -134,5 +140,6 @@ public class MapMarkersBuilder {
 	private RenderRequest _renderRequest;
 	private RenderResponse _renderResponse;
 	private SummaryBuilderFactory _summaryBuilderFactory;
+	private SearchResultPreferences _searchResultPreferences;
 
 }

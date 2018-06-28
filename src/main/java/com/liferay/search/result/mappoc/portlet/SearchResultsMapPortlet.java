@@ -19,6 +19,8 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchRequest;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchResponse;
+import com.liferay.search.result.display.SearchResultPreferences;
+import com.liferay.search.result.display.SearchResultPreferencesImpl;
 import com.liferay.search.result.display.builder.MapMarkersBuilder;
 import com.liferay.search.result.util.SearchUtil;
 

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.search.result.mappoc.portlet;
+package com.liferay.search.result.display;
 
 import java.util.Optional;
 
@@ -42,8 +42,6 @@ public class SearchResultPreferencesImpl implements SearchResultPreferences {
 				SearchResultPreferences.PREFERENCE_KEY_LONGITUDE, "-71.0586345");
 	};
 
-	private final PortletPreferencesHelper _portletPreferencesHelper;
-
 	@Override
 	public boolean isDisplayResultsInDocumentForm() {
 		return false;
@@ -53,4 +51,13 @@ public class SearchResultPreferencesImpl implements SearchResultPreferences {
 	public boolean isViewInContext() {
 		return false;
 	}
+
+	@Override
+	public boolean isHighlightEnabled() {
+		return _portletPreferencesHelper.getBoolean(
+			SearchResultPreferences.HIGHLIGHT_ENABLED_PREFERENCE_KEY,
+			SearchResultPreferences.HIGHLIGHT_ENABLED_DEFAULT_VALUE);
+	}
+
+	private final PortletPreferencesHelper _portletPreferencesHelper;
 }

@@ -22,17 +22,19 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.FastDateFormatFactory;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
-import com.liferay.portal.search.web.internal.display.context.PortletURLFactory;
-import com.liferay.portal.search.web.internal.display.context.PortletURLFactoryImpl;
-import com.liferay.portal.search.web.internal.result.display.builder.SearchResultSummaryDisplayBuilder;
-import com.liferay.portal.search.web.internal.result.display.context.SearchResultSummaryDisplayContext;
+import com.liferay.search.result.display.SearchResultPreferences;
+import com.liferay.search.result.display.SearchResultPreferencesImpl;
+import com.liferay.search.result.display.builder.SearchResultSummaryDisplayBuilder;
+import com.liferay.search.result.display.context.SearchResultSummaryDisplayContext;
+import com.liferay.search.result.util.SearchUtil;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchRequest;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchResponse;
 import com.liferay.portal.search.web.search.result.SearchResultImageContributor;
+import com.liferay.portal.util.FastDateFormatFactoryImpl;
 
 import java.io.IOException;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +46,6 @@ import javax.portlet.PortletException;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
@@ -61,8 +62,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=" +
 			SearchResultsMapPortletKeys.CSS_CLASS_WRAPPER,
-		"com.liferay.portlet.display-category=category.search-poc",
-		"com.liferay.portlet.header-portlet-css=/map/results/css/main.css",
+		"com.liferay.portlet.display-category=com.liferay.geolocation.bulk.category",
+		"com.liferay.portlet.header-portlet-css=/search/map/css/main.css",
 		"com.liferay.portlet.icon=/icons/search.png",
 		"com.liferay.portlet.instanceable=true",
 		"com.liferay.portlet.layout-cacheable=true",
@@ -177,8 +178,8 @@ public class SearchResultsMapPortlet extends MVCPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws Exception {
 
-		SearchMapPortletPreferences searchMapPortletPreferences =
-			new SearchMapPortletPreferencesImpl(
+		SearchResultPreferences searchResultPreferences =
+			new SearchResultPreferencesImpl(
 				portletSharedSearchResponse.getPortletPreferences(
 					renderRequest));
 
@@ -190,14 +191,14 @@ public class SearchResultsMapPortlet extends MVCPortlet {
 		SearchResultsSummariesHolder searchResultsSummariesHolder =
 			new SearchResultsSummariesHolder(documents.size());
 
-		PortletURLFactory portletURLFactory = new PortletURLFactoryImpl(
-			renderRequest, renderResponse);
+		PortletURL portletURL = 
+			SearchUtil.getPortletURL(renderRequest, renderResponse);
 
 		for (Document document : documents) {
 			SearchResultSummaryDisplayContext summary = doBuildSummary(
 				document, portletSharedSearchResponse, renderRequest,
-				renderResponse, themeDisplay, portletURLFactory,
-				searchMapPortletPreferences);
+				renderResponse, themeDisplay, portletURL,
+				searchResultPreferences);
 
 			searchResultsSummariesHolder.put(document, summary);
 		}
@@ -209,26 +210,25 @@ public class SearchResultsMapPortlet extends MVCPortlet {
 			Document document,
 			PortletSharedSearchResponse portletSharedSearchResponse,
 			RenderRequest renderRequest, RenderResponse renderResponse,
-			ThemeDisplay themeDisplay, PortletURLFactory portletURLFactory,
-			SearchMapPortletPreferences searchResultsPortletPreferences)
+			ThemeDisplay themeDisplay, PortletURL portletURL,
+			SearchResultPreferences searchResultPreferences)
 		throws Exception {
 
 		SearchResultSummaryDisplayBuilder searchResultSummaryDisplayBuilder =
 			new SearchResultSummaryDisplayBuilder();
 
-		PortletURL portletURL = portletURLFactory.getPortletURL();
-
+		searchResultSummaryDisplayBuilder.setSearchResultPreferences(
+			searchResultPreferences);
 		searchResultSummaryDisplayBuilder.setAssetEntryLocalService(
 			assetEntryLocalService);
 		searchResultSummaryDisplayBuilder.setCurrentURL(portletURL.toString());
 		searchResultSummaryDisplayBuilder.setDocument(document);
 		searchResultSummaryDisplayBuilder.setHighlightEnabled(
-			searchResultsPortletPreferences.isHighlightEnabled());
+			searchResultPreferences.isHighlightEnabled());
 		searchResultSummaryDisplayBuilder.setImageRequested(true);
 		searchResultSummaryDisplayBuilder.setLanguage(language);
 		searchResultSummaryDisplayBuilder.setLocale(themeDisplay.getLocale());
-		searchResultSummaryDisplayBuilder.setPortletURLFactory(
-			portletURLFactory);
+		searchResultSummaryDisplayBuilder.setPortletURL(portletURL);
 		searchResultSummaryDisplayBuilder.setRenderRequest(renderRequest);
 		searchResultSummaryDisplayBuilder.setRenderResponse(renderResponse);
 		searchResultSummaryDisplayBuilder.setRequest(
@@ -240,6 +240,8 @@ public class SearchResultsMapPortlet extends MVCPortlet {
 		searchResultSummaryDisplayBuilder.setSummaryBuilderFactory(
 			summaryBuilderFactory);
 		searchResultSummaryDisplayBuilder.setThemeDisplay(themeDisplay);
+		searchResultSummaryDisplayBuilder.setFastDateFormatFactory(
+			_fastDateFormatFactory);
 
 		return searchResultSummaryDisplayBuilder.build();
 	}
@@ -276,5 +278,8 @@ public class SearchResultsMapPortlet extends MVCPortlet {
 
 	private final Set<SearchResultImageContributor>
 		_searchResultImageContributors = new HashSet<>();
+
+	private final FastDateFormatFactory _fastDateFormatFactory =
+			new FastDateFormatFactoryImpl();
 
 }

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.search.result.mappoc.portlet;
+package com.liferay.search.result.display;
 
 /**
  * @author Wade Cao
@@ -22,6 +22,13 @@ public interface SearchResultPreferences {
 	public static final String PREFERENCE_KEY_LATITUDE = "lat";
 	
 	public static final String PREFERENCE_KEY_LONGITUDE = "lng";
+	
+	public static final boolean HIGHLIGHT_ENABLED_DEFAULT_VALUE = true;
+
+	public static final String HIGHLIGHT_ENABLED_PREFERENCE_KEY =
+		"highlightEnabled";
+
+	public boolean isHighlightEnabled();
 	
 	public String getLatitude();
 

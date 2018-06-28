@@ -21,9 +21,9 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.geolocation.GeoLocationPoint;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
+import com.liferay.search.result.display.SearchResultPreferences;
+import com.liferay.search.result.display.SearchResultPreferencesImpl;
 import com.liferay.search.result.display.context.SearchResultSummaryDisplayContext;
-import com.liferay.search.result.mappoc.portlet.SearchResultPreferences;
-import com.liferay.search.result.mappoc.portlet.SearchResultPreferencesImpl;
 
 import java.util.List;
 import java.util.Locale;

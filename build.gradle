@@ -23,5 +23,8 @@ dependencies {
 	compile group: "com.liferay", name: "com.liferay.portal.search.web.api", version: "2.0.0"
 	compile group: "com.liferay", name: "com.liferay.petra.string", version: "2.0.0"
 	compile group: "com.liferay", name: "com.liferay.petra.xml", version: "2.0.0"
- 
+/*
+	compile group: "com.liferay", name: "com.liferay.frontend.js.web", version: "2.0.5"
+	compile group: "com.liferay", name: "com.liferay.frontend.js.spa.web", version: "2.0.3"
+*/
 }

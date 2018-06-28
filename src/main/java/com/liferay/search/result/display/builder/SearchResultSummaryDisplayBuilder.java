@@ -43,17 +43,11 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.summary.Summary;
 import com.liferay.portal.search.summary.SummaryBuilder;
 import com.liferay.portal.search.summary.SummaryBuilderFactory;
-//import com.liferay.portal.search.web.internal.display.context.PortletURLFactory;
-//import com.liferay.portal.search.web.internal.display.context.SearchResultPreferences;
-//import com.liferay.portal.search.web.internal.result.display.context.SearchResultFieldDisplayContext;
-//import com.liferay.portal.search.web.internal.result.display.context.SearchResultSummaryDisplayContext;
-//import com.liferay.portal.search.web.internal.util.SearchStringUtil;
-//import com.liferay.portal.search.web.internal.util.SearchUtil;
 import com.liferay.portal.search.web.search.result.SearchResultImage;
 import com.liferay.portal.search.web.search.result.SearchResultImageContributor;
+import com.liferay.search.result.display.SearchResultPreferences;
 import com.liferay.search.result.display.context.SearchResultFieldDisplayContext;
 import com.liferay.search.result.display.context.SearchResultSummaryDisplayContext;
-import com.liferay.search.result.mappoc.portlet.SearchResultPreferences;
 import com.liferay.search.result.util.SearchUtil;
 
 import java.text.DateFormat;

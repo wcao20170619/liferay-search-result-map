@@ -30,18 +30,4 @@ and the versions of the same packages deployed in the Portal.
 If you're using elasticsearch-head to run this query, make sure you're using
 the `POST` method instead of `GET`.
 
-# SOURCE URLS
-
-https://data.cityofboston.gov/City-Services/311-Service-Requests/awu8-dc52
-https://data.cityofboston.gov/browse?limitTo=datasets&utf8=✓
-https://data.cityofboston.gov/resource/awu8-dc52.json
-
-# APIS
-
-https://github.com/socrata/datasync
-https://github.com/socrata/soda-java
-
-# APP URL
-
-http://www.cityofboston.gov/doit/apps/citizensconnect.asp
 
